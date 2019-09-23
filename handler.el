@@ -33,13 +33,8 @@
 (defvar handler-alist ())
 (defvar handler-keywords '(:repls :docs :defs))
 
-(defun handler--enlist (exp)
-  "Return EXP wrapped in a list, or as-is if already a list."
-  (declare (pure t) (side-effect-free t))
-  (if (listp exp) exp (list exp)))
-
 (defun handler-def (modes &optional args)
-  (let ((modes (handler--enlist modes)))
+  (let ((modes (if (listp modes) modes (list (modes)))))
     (dolist (mode modes)
       (push `(,mode . ,args)
             handler-alist))))
