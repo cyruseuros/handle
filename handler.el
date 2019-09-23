@@ -33,7 +33,7 @@
 (defvar handler-alist ())
 (defvar handler-keywords '(:repls :docs :defs))
 
-(defun handler-def (modes &optional args)
+(defun handler-def (modes &rest args)
   (let ((modes (if (listp modes) modes (list (modes)))))
     (dolist (mode modes)
       (push `(,mode . ,args)
