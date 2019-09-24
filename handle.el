@@ -31,7 +31,9 @@
 ;;; Code:
 
 (defvar handle-alist ())
-(defvar handle-keywords '(:repls :docs :defs :formats))
+(defvar handle-keywords
+  '(:evaluators :repls :docs :gotos
+    :formaters :compilers :errors))
 
 (defun handle-def (modes &rest args)
   (let ((modes (if (listp modes) modes (list modes))))
