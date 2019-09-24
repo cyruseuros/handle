@@ -35,6 +35,7 @@
   '(:evaluators :repls :docs :gotos
     :formaters :compilers :errors))
 
+;;;###autoload
 (defun handle-def (modes &rest args)
   (let ((modes (if (listp modes) modes (list modes))))
     (dolist (mode modes)
