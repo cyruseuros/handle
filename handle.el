@@ -1,9 +1,9 @@
-;;; handler.el --- A handler of things. -*- lexical-binding: t; -*-
+;;; handle.el --- A handle for things. -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019 Uros Perisic
 
 ;; Author: Uros Perisic
-;; URL: https://gitlab.com/jjzmajic/handler
+;; URL: https://gitlab.com/jjzmajic/handle
 ;;
 ;; Version: 0.1
 ;; Keywords: convenience
@@ -26,33 +26,33 @@
 ;; This file is not part of Emacs.
 
 ;;; Commentary:
-;; A handler of things.
+;; A handle for things.
 
 ;;; Code:
 
-(defvar handler-alist ())
-(defvar handler-keywords '(:repls :docs :defs))
+(defvar handle-alist ())
+(defvar handle-keywords '(:repls :docs :defs :formats))
 
-(defun handler-def (modes &rest args)
+(defun handle-def (modes &rest args)
   (let ((modes (if (listp modes) modes (list modes))))
     (dolist (mode modes)
       (push `(,mode . ,args)
-            handler-alist))))
+            handle-alist))))
 
-(defun handler--command-execute (commands)
+(defun handle--command-execute (commands)
   (if (listp commands)
       (unless (command-execute (car commands))
-        (handler--command-execute (cdr commands)))
+        (handle--command-execute (cdr commands)))
     (command-execute commands)))
 
-(dolist (keyword handler-keywords)
+(dolist (keyword handle-keywords)
   (defalias
-    (intern (format "handler-%s" (substring (symbol-name keyword) 1)))
+    (intern (format "handle-%s" (substring (symbol-name keyword) 1)))
     (lambda ()
       (interactive)
-      (let ((handler-plist (alist-get major-mode handler-alist)))
-        (handler--command-execute
-         (plist-get handler-plist keyword))))))
+      (let ((handle-plist (alist-get major-mode handle-alist)))
+        (handle--command-execute
+         (plist-get handle-plist keyword))))))
 
-(provide 'handler)
-;;; handler.el ends here
+(provide 'handle)
+;;; handle.el ends here
