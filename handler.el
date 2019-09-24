@@ -34,7 +34,7 @@
 (defvar handler-keywords '(:repls :docs :defs))
 
 (defun handler-def (modes &rest args)
-  (let ((modes (if (listp modes) modes (list (modes)))))
+  (let ((modes (if (listp modes) modes (list modes))))
     (dolist (mode modes)
       (push `(,mode . ,args)
             handler-alist))))
