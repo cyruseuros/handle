@@ -30,23 +30,34 @@
 
 ;;; Code:
 
-(defvar handle-alist ())
+(defvar handle-alist nil)
 (defvar handle-keywords
   '(:evaluators :repls :docs :gotos
-    :formaters :compilers :errors))
+                :formaters :compilers :errors))
+
+(defun handle--enlist (exp)
+  (declare (pure t) (side-effect-free t))
+  (if (listp exp) exp (list exp)))
 
 ;;;###autoload
-(defun handle-def (modes &rest args)
-  (let ((modes (if (listp modes) modes (list modes))))
+(defun handle (modes &rest args)
+  (let ((modes (handle--enlist modes))
+        (args (cl-loop
+               for arg in args collect
+               (if (keywordp arg) arg (handle--enlist arg)))))
     (dolist (mode modes)
       (push `(,mode . ,args)
             handle-alist))))
 
 (defun handle--command-execute (commands)
-  (if (listp commands)
-      (unless (command-execute (car commands))
-        (handle--command-execute (cdr commands)))
-    (command-execute commands)))
+  (when (commands)
+    (let ((first (car commands))
+          (rest (cdr commands)))
+      (condition-case _
+          (unless (and (command-execute first)
+                       (message (format "`handle' ran %s." first)))
+            (handle--command-execte rest))
+        (error (handle--command-execute rest))))))
 
 (dolist (keyword handle-keywords)
   (defalias
