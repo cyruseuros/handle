@@ -75,7 +75,7 @@ Stop when one returns non-nil.  Try next command on `error'."
   (when commands
     (let ((first (car commands))
           (rest (cdr commands)))
-      (condition-case _
+      (condition-case nil
           (unless (and (command-execute first)
                        (message (format "`handle' ran %s." first)))
             (handle--command-execute rest))
