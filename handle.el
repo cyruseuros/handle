@@ -85,7 +85,7 @@ Stop when one returns non-nil.  Try next command on `error'."
   (let ((keyword-name (substring (symbol-name keyword) 1)))
     (defalias
       (intern (format "handle-%s" keyword-name))
-      (lambda ()
+      (lambda nil
         (interactive)
         (let* ((handle-plist (alist-get major-mode handle-alist))
                (handle-list (plist-get handle-plist keyword)))
