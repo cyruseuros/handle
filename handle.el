@@ -56,18 +56,25 @@
   (declare (pure t) (side-effect-free t))
   (if (listp exp) exp (list exp)))
 
-;;;###autoload
-(defun handle (modes &rest args)
-  "Define handles for MODES through plist ARGS.
+(defun handle--keyword-name (keyword)
+  (substring (symbol-name keyword) 1))
+
+(defalias 'handle 
+  (lambda (modes &rest args)
+    (let ((modes (handle--enlist modes))
+          (args (cl-loop
+                 for arg in args collect
+                 (if (keywordp arg) arg (handle--enlist arg)))))
+      (dolist (mode modes)
+        (push `(,mode . ,args)
+              handle-alist))))
+  (format
+   "Define handles for MODES through plist ARGS.
 You can use any keyword from `handle-keywords', as long as you
-define them before the package is loaded."
-  (let ((modes (handle--enlist modes))
-        (args (cl-loop
-               for arg in args collect
-               (if (keywordp arg) arg (handle--enlist arg)))))
-    (dolist (mode modes)
-      (push `(,mode . ,args)
-            handle-alist))))
+define them before the package is loaded.
+
+\(fn MODES &key %s)"
+   (upcase (mapconcat #'handle--keyword-name handle-keywords " "))))
 
 (defun handle--command-execute (commands &optional message arg)
   "Run COMMANDS with `command-execute'.
@@ -85,7 +92,7 @@ Stop when one returns non-nil.  Try next command on `error'.
         (error (handle--command-execute rest "`handle' failed to run %s." first))))))
 
 (dolist (keyword handle-keywords)
-  (let ((keyword-name (substring (symbol-name keyword) 1)))
+  (let ((keyword-name (handle--keyword-name keyword)))
     (defalias
       (intern (format "handle-%s" keyword-name))
       (lambda nil
