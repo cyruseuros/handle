@@ -57,14 +57,16 @@
   (if (listp exp) exp (list exp)))
 
 (defun handle--keyword-name (keyword)
+  "Get KEYWORD name as a string."
   (substring (symbol-name keyword) 1))
 
-(defalias 'handle 
+(defalias 'handle
   (lambda (modes &rest args)
     (let ((modes (handle--enlist modes))
           (args (cl-loop
                  for arg in args collect
-                 (if (keywordp arg) arg (handle--enlist arg)))))
+                 (if (keywordp arg) arg
+                   (handle--enlist arg)))))
       (dolist (mode modes)
         (push `(,mode . ,args)
               handle-alist))))
@@ -76,12 +78,12 @@ define them before the package is loaded.
 \(fn MODES &key %s)"
    (upcase (mapconcat #'handle--keyword-name handle-keywords " "))))
 
-(defun handle--command-execute (commands &optional message arg)
+(defun handle--command-execute (commands &optional message &rest args)
   "Run COMMANDS with `command-execute'.
 Stop when one returns non-nil.  Try next command on `error'.
-`message' MESSAGE `format'ted with a single ARG."
+`message' MESSAGE `format'ted with ARGS."
   (when message
-    (message (format message) arg))
+    (message (apply #'format message args)))
   (when commands
     (let ((first (car commands))
           (rest (cdr commands)))
@@ -100,8 +102,7 @@ Stop when one returns non-nil.  Try next command on `error'.
         (let* ((handle-plist (alist-get major-mode handle-alist))
                (handle-list (plist-get handle-plist keyword)))
           (if handle-list
-              (handle--command-execute
-               (plist-get handle-plist keyword))
+              (handle--command-execute handle-list)
             (message (format "No `handle' for %s %s."
                              major-mode keyword-name)))))
       (format "`handle' %s." keyword-name))))
