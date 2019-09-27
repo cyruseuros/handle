@@ -2,8 +2,8 @@
 
 A handle for things.
 
-=handle= provides handlers for functions frequently shared accros
-major modes, and often performend by multiple callables in the same
+=handle= provides handlers for functions frequently shared across
+major modes, and often performed by multiple callables in the same
 one (major mode) such as:
 
 - evaluating expressions
@@ -12,7 +12,7 @@ one (major mode) such as:
 - going to definition
 - formatting code
 - compiling code
-- lisiting errors
+- listing errors
 
 =handle= generates =handle-*= functions based on (user-specified)
 =handle-keywords= that can then be bound to a single global =kbd=
@@ -22,7 +22,7 @@ So by running this:
 #+begin_src emacs-lisp
   (handle '(python-mode inferior-python-mode)
             :repls #'run-python
-            :formaters #'lsp-format-buffer
+            :formatters #'lsp-format-buffer
             :docs '(lsp-describe-thing-at-point
                     python-help-for-region-or-symbol
                     python-eldoc-for-region-or-symbol
