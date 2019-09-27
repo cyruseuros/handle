@@ -1,0 +1,36 @@
+[[./handle.jpg]]
+
+A handle for things.
+
+=handle= provides handlers for functions frequently shared accros
+major modes, and often performend by multiple callables in the same
+one (major mode) such as:
+
+- evaluating expressions
+- starting repls
+- finding documentation
+- going to definition
+- formatting code
+- compiling code
+- lisiting errors
+
+=handle= generates =handle-*= functions based on (user-specified)
+=handle-keywords= that can then be bound to a single global =kbd=
+and used in any major mode.
+
+So by running this:
+#+begin_src emacs-lisp
+  (handle '(python-mode inferior-python-mode)
+            :repls #'run-python
+            :formaters #'lsp-format-buffer
+            :docs '(lsp-describe-thing-at-point
+                    python-help-for-region-or-symbol
+                    python-eldoc-for-region-or-symbol
+                    python-shell-print-region-or-symbol))
+#+end_src
+
+And then calling =handle-docs= in python mode, =handle= will run each
+of the functions specified under =:docs= in order untill one
+succeeds. If a function errors out or returns =nil= it will calmly
+proceed to the next one. The same function will behave differently in
+other modes.

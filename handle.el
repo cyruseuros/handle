@@ -28,6 +28,22 @@
 ;;; Commentary:
 ;; A handle for things.
 
+;; `handle' provides handlers for functions frequently shared accros
+;; major modes, and often performend by multiple callables in the same
+;; one (major mode) such as:
+
+;; - evaluating expressions
+;; - starting repls
+;; - finding documentation
+;; - going to definition
+;; - formatting code
+;; - compiling code
+;; - lisiting errors
+
+;; `handle' generates `handle-*' functions based on (user-specified)
+;; `handle-keywords' that can then be bound to a single global `kbd'
+;; and used in any major mode.
+
 ;;; Code:
 
 (defvar handle-alist nil)
@@ -36,11 +52,15 @@
                 :formaters :compilers :errors))
 
 (defun handle--enlist (exp)
+  "Return EXP wrapped in a list, or as-is if already a list."
   (declare (pure t) (side-effect-free t))
   (if (listp exp) exp (list exp)))
 
 ;;;###autoload
 (defun handle (modes &rest args)
+  "Define handles for MODES through plist ARGS.
+You can use any keyword from `handle-keywords', as long as you
+define them before the package is loaded."
   (let ((modes (handle--enlist modes))
         (args (cl-loop
                for arg in args collect
@@ -50,23 +70,31 @@
             handle-alist))))
 
 (defun handle--command-execute (commands)
-  (when (commands)
+  "Run COMMANDS with `command-execute'.
+Stop when one returns non-nil.  Try next command on `error'."
+  (when commands
     (let ((first (car commands))
           (rest (cdr commands)))
       (condition-case _
           (unless (and (command-execute first)
                        (message (format "`handle' ran %s." first)))
-            (handle--command-execte rest))
+            (handle--command-execute rest))
         (error (handle--command-execute rest))))))
 
 (dolist (keyword handle-keywords)
-  (defalias
-    (intern (format "handle-%s" (substring (symbol-name keyword) 1)))
-    (lambda ()
-      (interactive)
-      (let ((handle-plist (alist-get major-mode handle-alist)))
-        (handle--command-execute
-         (plist-get handle-plist keyword))))))
+  (let ((keyword-name (substring (symbol-name keyword) 1)))
+    (defalias
+      (intern (format "handle-%s" keyword-name))
+      (lambda ()
+        (interactive)
+        (let* ((handle-plist (alist-get major-mode handle-alist))
+               (handle-list (plist-get handle-plist keyword)))
+          (if handle-list
+              (handle--command-execute
+               (plist-get handle-plist keyword))
+            (message (format "No `handle' for %s %s."
+                             major-mode keyword-name)))))
+      (format "`handle' %s." keyword-name))))
 
 (provide 'handle)
 ;;; handle.el ends here
