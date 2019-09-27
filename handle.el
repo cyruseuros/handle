@@ -69,17 +69,20 @@ define them before the package is loaded."
       (push `(,mode . ,args)
             handle-alist))))
 
-(defun handle--command-execute (commands)
+(defun handle--command-execute (commands &optional message arg)
   "Run COMMANDS with `command-execute'.
-Stop when one returns non-nil.  Try next command on `error'."
+Stop when one returns non-nil.  Try next command on `error'.
+`message' MESSAGE `format'ted with a single ARG."
+  (when message
+    (message (format message) arg))
   (when commands
     (let ((first (car commands))
           (rest (cdr commands)))
       (condition-case nil
           (unless (and (command-execute first)
-                       (message (format "`handle' ran %s." first)))
-            (handle--command-execute rest))
-        (error (handle--command-execute rest))))))
+                       (message (format "`handle' ran %s successfully." first)))
+            (handle--command-execute rest "`handle' ran %s unsuccessfully." first))
+        (error (handle--command-execute rest "`handle' failed to run %s." first))))))
 
 (dolist (keyword handle-keywords)
   (let ((keyword-name (substring (symbol-name keyword) 1)))
