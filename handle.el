@@ -85,33 +85,31 @@ define them before the package is loaded.
 \(fn MODES &key %s)"
    (upcase (mapconcat #'handle--keyword-name handle-keywords " "))))
 
-(defun handle--command-execute (commands prefixarg)
+(defun handle--command-execute (commands arg)
   "Run COMMANDS with `command-execute'.
-Stop when one returns non-nil.  Try next command on `error',
-passing PREFIXARG as `prefix-arg'."
+Try next command on `error', passing ARG as `prefix-arg'."
   (when commands
     (let ((first (car commands))
           (rest (cdr commands)))
       (condition-case nil
-          (unless (let ((prefix-arg prefixarg))
-                    (command-execute first 'record))
-            (handle--command-execute rest prefixarg))
-        (error (handle--command-execute rest prefixarg))))))
+          (let ((prefix-arg arg))
+            (command-execute first 'record))
+        (error (handle--command-execute rest arg))))))
 
 (dolist (keyword handle-keywords)
   (let ((keyword-name (handle--keyword-name keyword)))
     (defalias
       (intern (format "handle-%s" keyword-name))
-      (lambda (prefixarg)
+      (lambda (arg)
         (interactive "P")
         (let ((handle-list
                (plist-get (alist-get major-mode handle-alist)
                           keyword)))
           (if handle-list
-              (handle--command-execute handle-list prefixarg)
+              (handle--command-execute handle-list arg)
             (message (format "No `handle' for %s %s."
                              major-mode keyword-name)))))
-      (format "`handle' %s.  Run `command-history' for log."
+      (format "`handle' for %s.  Run `command-history' for log."
               keyword-name))))
 
 (provide 'handle)
