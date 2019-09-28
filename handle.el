@@ -110,8 +110,10 @@ Stop when one returns non-nil.  Try next command on `error'.
                           (or handle-inhibit-message
                               handle-inhibit-success-message)))
                      (message "`handle' ran `%s' successfully." first)))
-            (handle--command-execute rest prefixarg "`handle' ran `%s' unsuccessfully." first))
-        (error (handle--command-execute rest prefixarg "`handle' failed to run `%s'." first))))))
+            (handle--command-execute
+             rest prefixarg "`handle' ran `%s' unsuccessfully." first))
+        (error (handle--command-execute
+                rest prefixarg "`handle' failed to run `%s'." first))))))
 
 (dolist (keyword handle-keywords)
   (let ((keyword-name (handle--keyword-name keyword)))
