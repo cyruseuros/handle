@@ -103,8 +103,9 @@ Stop when one returns non-nil.  Try next command on `error'.
       (intern (format "handle-%s" keyword-name))
       (lambda nil
         (interactive)
-        (let* ((handle-plist (alist-get major-mode handle-alist))
-               (handle-list (plist-get handle-plist keyword)))
+        (let ((handle-list
+               (plist-get (alist-get major-mode handle-alist)
+                          keyword)))
           (if handle-list
               (handle--command-execute handle-list)
             (message (format "No `handle' for %s %s."
