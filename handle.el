@@ -89,13 +89,15 @@ define them before the package is loaded.
 Stop when one returns non-nil.  Try next command on `error'.
 `message' MESSAGE `format'ted with ARGS."
   (when message
-    (message (apply #'format message args)))
+    (apply #'message message args))
   (when commands
     (let ((first (car commands))
           (rest (cdr commands)))
       (condition-case nil
           (unless (and (command-execute first)
-                       (message (format "`handle' ran %s successfully." first)))
+                       ;; log but don't echo so that output is preserved
+                       (let ((inhibit-message nil))
+                         (message "`handle' ran %s successfully." first))) ;
             (handle--command-execute rest "`handle' ran %s unsuccessfully." first))
         (error (handle--command-execute rest "`handle' failed to run %s." first))))))
 
