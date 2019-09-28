@@ -91,7 +91,7 @@ define them before the package is loaded.
 \(fn MODES &key %s)"
    (upcase (mapconcat #'handle--keyword-name handle-keywords " "))))
 
-(defun handle--command-execute (commands &optional message &rest args)
+(defun handle--command-execute (commands prefixarg &optional message &rest args)
   "Run COMMANDS with `command-execute'.
 Stop when one returns non-nil.  Try next command on `error'.
 `message' MESSAGE `format'ted with ARGS."
@@ -103,28 +103,35 @@ Stop when one returns non-nil.  Try next command on `error'.
     (let ((first (car commands))
           (rest (cdr commands)))
       (condition-case nil
-          (unless (and (command-execute first)
-                       (let ((inhibit-message
-                              (or handle-inhibit-message
-                                  handle-inhibit-success-message)))
-                         (message "`handle' ran `%s' successfully." first)))
-            (handle--command-execute rest "`handle' ran `%s' unsuccessfully." first))
-        (error (handle--command-execute rest "`handle' failed to run `%s'." first))))))
+          (unless (and
+                   (let ((prefix-arg prefixarg))
+                     (command-execute first 'record))
+                   (let ((inhibit-message
+                          (or handle-inhibit-message
+                              handle-inhibit-success-message)))
+                     (message "`handle' ran `%s' successfully." first)))
+            (handle--command-execute rest prefixarg "`handle' ran `%s' unsuccessfully." first))
+        (error (handle--command-execute rest prefixarg "`handle' failed to run `%s'." first))))))
 
 (dolist (keyword handle-keywords)
   (let ((keyword-name (handle--keyword-name keyword)))
     (defalias
       (intern (format "handle-%s" keyword-name))
-      (lambda nil
-        (interactive)
+      (lambda (prefixarg)
+        (interactive "P")
         (let ((handle-list
                (plist-get (alist-get major-mode handle-alist)
                           keyword)))
           (if handle-list
-              (handle--command-execute handle-list)
+              (handle--command-execute handle-list prefixarg)
             (message (format "No `handle' for %s %s."
                              major-mode keyword-name)))))
-      (format "`handle' %s." keyword-name))))
+      (format
+       (concat
+        "`handle' %s.  "
+        "Run `command-history' or check the "
+        "*Messages* buffer for past attempts.")
+       keyword-name))))
 
 (provide 'handle)
 ;;; handle.el ends here
