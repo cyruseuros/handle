@@ -46,10 +46,14 @@
 
 ;;; Code:
 
-(defvar handle-alist nil)
+(defvar handle-alist nil
+  "`handle' dispatch alist.
+Associates major modes with handlers.")
 (defvar handle-keywords
-  '(:evaluators :repls :docs :gotos
-                :formatters :compilers :errors))
+  '(:evaluators :repls :docs :gotos :formatters :compilers :errors)
+  "Package author's preffered keywords.
+Users are strongly encouraged to override this vairable to suit
+their needs, and to do so /before/ the package is loaded.")
 
 (defun handle--enlist (exp)
   "Return EXP wrapped in a list, or as-is if already a list."
