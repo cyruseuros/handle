@@ -98,10 +98,10 @@ Try next command on `error', passing ARG as `prefix-arg'."
           (rest (cdr commands)))
       (condition-case nil
           (unless
-              (or handle-nil-error-p
-                  (let ((prefix-arg arg))
+              (or (let ((prefix-arg arg))
                     (message "``handle' running `%s'..." first)
-                    (command-execute first 'record)))
+                    (command-execute first 'record))
+                  handle-nil-error-p)
             (message "`handle' ran `%s' yielding nil..." first)
             (handle--command-execute rest arg))
         (error (message "`handle' failed to run `%s'..." first)
