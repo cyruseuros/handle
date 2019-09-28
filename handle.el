@@ -49,7 +49,7 @@
 (defvar handle-alist nil)
 (defvar handle-keywords
   '(:evaluators :repls :docs :gotos
-                :formaters :compilers :errors))
+                :formatters :compilers :errors))
 
 (defun handle--enlist (exp)
   "Return EXP wrapped in a list, or as-is if already a list."
