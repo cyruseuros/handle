@@ -58,12 +58,6 @@ Associates major modes with handlers.")
 Users are strongly encouraged to override this vairable to suit
 their needs, and to do so /before/ the package is loaded.")
 
-(defvar handle-inhibit-message nil
-  "`inhibit-message' during all `handle' calls.")
-
-(defvar handle-inhibit-success-message t
-  "`inhibit-message' during successful `handle' calls.")
-
 (defun handle--enlist (exp)
   "Return EXP wrapped in a list, or as-is if already a list."
   (declare (pure t) (side-effect-free t))
@@ -91,29 +85,18 @@ define them before the package is loaded.
 \(fn MODES &key %s)"
    (upcase (mapconcat #'handle--keyword-name handle-keywords " "))))
 
-(defun handle--command-execute (commands prefixarg &optional message &rest args)
+(defun handle--command-execute (commands prefixarg)
   "Run COMMANDS with `command-execute'.
-Stop when one returns non-nil.  Try next command on `error'.
-`message' MESSAGE `format'ted with ARGS."
-  (when message
-    (let ((inhibit-message handle-inhibit-message))
-      (apply #'message message args)))
-
+Stop when one returns non-nil.  Try next command on `error',
+passing PREFIXARG as `prefix-arg'."
   (when commands
     (let ((first (car commands))
           (rest (cdr commands)))
       (condition-case nil
-          (unless (and
-                   (let ((prefix-arg prefixarg))
-                     (command-execute first 'record))
-                   (let ((inhibit-message
-                          (or handle-inhibit-message
-                              handle-inhibit-success-message)))
-                     (message "`handle' ran `%s' successfully." first)))
-            (handle--command-execute
-             rest prefixarg "`handle' ran `%s' unsuccessfully." first))
-        (error (handle--command-execute
-                rest prefixarg "`handle' failed to run `%s'." first))))))
+          (unless (let ((prefix-arg prefixarg))
+                    (command-execute first 'record))
+            (handle--command-execute rest prefixarg))
+        (error (handle--command-execute rest prefixarg))))))
 
 (dolist (keyword handle-keywords)
   (let ((keyword-name (handle--keyword-name keyword)))
@@ -128,12 +111,8 @@ Stop when one returns non-nil.  Try next command on `error'.
               (handle--command-execute handle-list prefixarg)
             (message (format "No `handle' for %s %s."
                              major-mode keyword-name)))))
-      (format
-       (concat
-        "`handle' %s.  "
-        "Run `command-history' or check the "
-        "*Messages* buffer for past attempts.")
-       keyword-name))))
+      (format "`handle' %s.  Run `command-history' for log."
+              keyword-name))))
 
 (provide 'handle)
 ;;; handle.el ends here
