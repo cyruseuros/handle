@@ -2,9 +2,10 @@
 
 A handle for things.
 
-=handle= provides handlers for functions frequently shared across
-major modes, and often performed by multiple callables in the same
-one (major mode) such as:
+* Value Proposition
+=handle= provides generic functions that specialize on major modes and
+intended purpose instead of arguments. Similar functionality is needed
+across programming languages such as:
 
 - evaluating expressions
 - starting repls
@@ -14,6 +15,13 @@ one (major mode) such as:
 - compiling code
 - listing errors
 
+But this functionality is performed by different callables across
+major modes and often by multiple callables in the same one. =handle=
+groups them together so that they can be bound to a single global
+=kbd=, selected based on major mode, and run in sequence until one
+succeeds.
+
+* Usage
 =handle= generates =handle-*= functions based on (user-specified)
 =handle-keywords= that can then be bound to a single global =kbd=
 and used in any major mode.
@@ -34,3 +42,10 @@ of the functions specified under =:docs= in order untill one
 succeeds. If a function errors out or returns =nil= it will calmly
 proceed to the next one. The same function will behave differently in
 other modes.
+
+* Note
+This package is designed to be as unopinionated as possible. I
+strongly recommend setting your own =handle-keywords= /before/ loading
+the package. The appropriate =handle-*= functions will then be
+generated, and the =handle= function itself will be able to interpret
+all of them.

@@ -28,9 +28,9 @@
 ;;; Commentary:
 ;; A handle for things.
 
-;; `handle' provides handlers for functions frequently shared accros
-;; major modes, and often performend by multiple callables in the same
-;; one (major mode) such as:
+;; `handle' provides generic functions that specialize on major modes
+;; and intended purpose instead of arguments.  Similar functionality is
+;; needed across programming languages such as:
 
 ;; - evaluating expressions
 ;; - starting repls
@@ -38,11 +38,13 @@
 ;; - going to definition
 ;; - formatting code
 ;; - compiling code
-;; - lisiting errors
+;; - listing errors
 
-;; `handle' generates `handle-*' functions based on (user-specified)
-;; `handle-keywords' that can then be bound to a single global `kbd'
-;; and used in any major mode.
+;; But this functionality is performed by different callables across
+;; major modes and often by multiple callables in the same
+;; one.  `handle' groups them together so that they can be bound to a
+;; single global `kbd', selected based on major mode, and run in
+;; sequence until one succeeds.
 
 ;;; Code:
 
