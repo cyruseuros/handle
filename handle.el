@@ -61,7 +61,7 @@ their needs, and to do so /before/ the package is loaded.")
 (defvar handle-nil-error-p nil
   "Whether to consider a command returning nil a strict failure.
 In a perfect world, this would not be an overly strict standard.
-Unfortunately it might be")
+Unfortunately it might be.")
 
 (defun handle--enlist (exp)
   "Return EXP wrapped in a list, or as-is if already a list."
@@ -109,19 +109,13 @@ Try next command on `error', passing ARG as `prefix-arg'."
 
 (dolist (keyword handle-keywords)
   (let ((keyword-name (handle--keyword-name keyword)))
-    (defalias
-      (intern (format "handle-%s" keyword-name))
+    (defalias (intern (format "handle-%s" keyword-name))
       (lambda (arg)
         (interactive "P")
-        (let ((handle-list
-               (plist-get (alist-get major-mode handle-alist)
-                          keyword)))
-          (if handle-list
-              (handle--command-execute handle-list arg)
-            (message (format "No `handle' for %s %s."
-                             major-mode keyword-name)))))
-      (format "`handle' for %s.  Run `command-history' for log."
-              keyword-name))))
+        (let ((handle-list (plist-get (alist-get major-mode handle-alist) keyword)))
+          (if handle-list (handle--command-execute handle-list arg)
+            (message "No `handle' for %s %s." major-mode keyword-name))))
+      (format "`handle' for %s." keyword-name))))
 
 (provide 'handle)
 ;;; handle.el ends here
