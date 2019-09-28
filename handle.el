@@ -58,6 +58,11 @@ Associates major modes with handlers.")
 Users are strongly encouraged to override this vairable to suit
 their needs, and to do so /before/ the package is loaded.")
 
+(defvar handle-nil-error-p nil
+  "Whether to consider a command returning nil a strict failure.
+In a perfect world, this would not be an overly strict standard.
+Unfortunately it might be")
+
 (defun handle--enlist (exp)
   "Return EXP wrapped in a list, or as-is if already a list."
   (declare (pure t) (side-effect-free t))
@@ -92,9 +97,15 @@ Try next command on `error', passing ARG as `prefix-arg'."
     (let ((first (car commands))
           (rest (cdr commands)))
       (condition-case nil
-          (let ((prefix-arg arg))
-            (command-execute first 'record))
-        (error (handle--command-execute rest arg))))))
+          (unless
+              (or handle-nil-error-p
+                  (let ((prefix-arg arg))
+                    (message "``handle' running `%s'..." first)
+                    (command-execute first 'record)))
+            (message "`handle' ran `%s' yielding nil..." first)
+            (handle--command-execute rest arg))
+        (error (message "`handle' failed to run `%s'..." first)
+               (handle--command-execute rest arg))))))
 
 (dolist (keyword handle-keywords)
   (let ((keyword-name (handle--keyword-name keyword)))
