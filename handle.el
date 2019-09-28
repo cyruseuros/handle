@@ -51,11 +51,18 @@
 (defvar handle-alist nil
   "`handle' dispatch alist.
 Associates major modes with handlers.")
+
 (defvar handle-keywords
   '(:evaluators :repls :docs :gotos :formatters :compilers :errors)
   "Package author's preffered keywords.
 Users are strongly encouraged to override this vairable to suit
 their needs, and to do so /before/ the package is loaded.")
+
+(defvar handle-inhibit-message nil
+  "`inhibit-message' during all `handle' calls.")
+
+(defvar handle-inhibit-success-message t
+  "`inhibit-message' during successful `handle' calls.")
 
 (defun handle--enlist (exp)
   "Return EXP wrapped in a list, or as-is if already a list."
@@ -89,15 +96,18 @@ define them before the package is loaded.
 Stop when one returns non-nil.  Try next command on `error'.
 `message' MESSAGE `format'ted with ARGS."
   (when message
-    (apply #'message message args))
+    (let ((inhibit-message handle-inhibit-message))
+      (apply #'message message args)))
+
   (when commands
     (let ((first (car commands))
           (rest (cdr commands)))
       (condition-case nil
           (unless (and (command-execute first)
-                       ;; log but don't echo so that output is preserved
-                       (let ((inhibit-message nil))
-                         (message "`handle' ran %s successfully." first))) ;
+                       (let ((inhibit-message
+                              (or handle-inhibit-message
+                                  handle-inhibit-success-message)))
+                         (message "`handle' ran %s successfully." first)))
             (handle--command-execute rest "`handle' ran %s unsuccessfully." first))
         (error (handle--command-execute rest "`handle' failed to run %s." first))))))
 
