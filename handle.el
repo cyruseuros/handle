@@ -1,4 +1,4 @@
-;;; handle.el --- A handle for things. -*- lexical-binding: t; -*-
+;;; handle.el --- A handle for major-mode generic functions. -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019 Uros Perisic
 
@@ -7,7 +7,7 @@
 ;;
 ;; Version: 0.1
 ;; Keywords: convenience
-;; Package-Requires: ((emacs "24.4"))
+;; Package-Requires: ((emacs "25"))
 
 ;; This program is free software: you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -26,7 +26,7 @@
 ;; This file is not part of Emacs.
 
 ;;; Commentary:
-;; A handle for things.
+;; A handle for major-mode generic functions.
 
 ;; `handle' provides generic functions that specialize on major modes
 ;; and intended purpose instead of arguments.  Similar functionality is
@@ -58,10 +58,10 @@ Associates major modes with handlers.")
 Users are strongly encouraged to override this vairable to suit
 their needs, and to do so /before/ the package is loaded.")
 
-(defvar handle-nil-error-p nil
+(defvar handle-nil-error-p t
   "Whether to consider a command returning nil a strict failure.
-In a perfect world, this would not be an overly strict standard.
-Unfortunately it might be.")
+In a perfect world, this would not be an overly stringent
+standard.  Unfortunately it might be.")
 
 (defun handle--enlist (exp)
   "Return EXP wrapped in a list, or as-is if already a list."

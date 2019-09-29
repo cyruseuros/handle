@@ -1,6 +1,6 @@
 [[./handle.jpg]]
 
-A handle for things.
+A handle for major-mode generic functions.
 
 * Value Proposition
 =handle= provides generic functions that specialize on major modes and
