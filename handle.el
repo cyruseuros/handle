@@ -7,7 +7,7 @@
 ;;
 ;; Version: 0.1
 ;; Keywords: convenience
-;; Package-Requires: ((emacs "25"))
+;; Package-Requires: ((emacs "25.1"))
 
 ;; This program is free software: you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
