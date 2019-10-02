@@ -7,7 +7,7 @@
 ;;
 ;; Version: 0.1
 ;; Keywords: convenience
-;; Package-Requires: ((emacs "25.1"))
+;; Package-Requires: ((emacs "25.1") (parent-mode "2.3"))
 
 ;; This program is free software: you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
@@ -47,6 +47,7 @@
 ;; sequence until one succeeds.
 
 ;;; Code:
+(require 'parent-mode)
 
 (defvar handle-alist nil
   "`handle' dispatch alist.
@@ -94,21 +95,35 @@ Try next command on `error', passing ARG as `prefix-arg'."
       (condition-case nil
           (unless
               (let ((prefix-arg arg))
-                (message "``handle' running `%s'..." first)
+                (message "`handle' running `%s'..." first)
                 (command-execute first 'record))
-            (message "`handle' ran `%s' yielding nil..." first)
+            (message "`handle' ran `%s' yielding nil." first)
             (handle--command-execute rest arg))
-        (error (message "`handle' failed to run `%s'..." first)
+        (error (message "`handle' failed to run `%s'." first)
                (handle--command-execute rest arg))))))
+
+(defun handle--get (mode keyword)
+  "Return handlers for KEYWORD in MODE."
+  (plist-get (alist-get mode handle-alist) keyword))
+
+(defun handle--mode-execute (modes keyword keyword-name arg)
+  "Handle KEYWORD for MODES, passing prefix ARG."
+  (let ((first (car modes))
+        (rest (cdr modes)))
+    (when modes
+      (message "`handle' handling `%s' %s..." first keyword-name)
+      (unless (handle--command-execute (handle--get first keyword) arg)
+        (message "Couldn't `handle' `%s' %s." first keyword-name)
+        (handle--mode-execute rest keyword keyword-name arg)))))
 
 (dolist (keyword handle-keywords)
   (let ((keyword-name (handle--keyword-name keyword)))
     (defalias (intern (format "handle-%s" keyword-name))
       (lambda (arg)
         (interactive "P")
-        (let ((handle-list (plist-get (alist-get major-mode handle-alist) keyword)))
-          (if handle-list (handle--command-execute handle-list arg)
-            (message "No `handle' for %s %s." major-mode keyword-name))))
+        (handle--mode-execute
+         (reverse (parent-mode-list major-mode))
+         keyword keyword-name arg))
       (format "`handle' for %s." keyword-name))))
 
 (provide 'handle)
