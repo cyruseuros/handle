@@ -98,14 +98,15 @@ Try next command on `error', passing ARG as `prefix-arg'."
     (let ((first (car commands))
           (rest (cdr commands)))
       (condition-case nil
-          (unless
-              (let ((prefix-arg arg))
-                (message "`handle' running `%s'..." first)
-                (command-execute first 'record))
-            ;; separate for readability
-            (if (or (eq handle-nil 'all) (member first handle-nil)) t
-              (message "`handle' ran `%s' unsuccessfully." first)
-              (handle--command-execute rest arg)))
+          (cond
+           ((let ((prefix-arg arg))
+              (message "`handle' running `%s'..." first)
+              (command-execute first 'record)) t)
+           ((or (eq handle-nil 'all)
+                (member first handle-nil)) t)
+           (t (progn
+                (message "`handle' ran `%s' unsuccessfully." first)
+                (handle--command-execute rest arg))))
         (error (message "`handle' failed to run `%s'." first)
                (handle--command-execute rest arg))))))
 
