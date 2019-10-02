@@ -53,8 +53,13 @@
   "`handle' dispatch alist.
 Associates major modes with handlers.")
 
+(defvar handle-nil 'all
+  "List of commands that return nil on success.
+If `all', treat all commands passed to `handle' this way.")
+
 (defvar handle-keywords
-  '(:evaluators :repls :docs :gotos :formatters :compilers :errors)
+  '(:evaluators :repls :docs :gotos
+                :formatters :compilers :errors)
   "Package author's preffered keywords.
 Users are strongly encouraged to override this vairable to suit
 their needs, and to do so /before/ the package is loaded.")
@@ -97,8 +102,10 @@ Try next command on `error', passing ARG as `prefix-arg'."
               (let ((prefix-arg arg))
                 (message "`handle' running `%s'..." first)
                 (command-execute first 'record))
-            (message "`handle' ran `%s' yielding nil." first)
-            (handle--command-execute rest arg))
+            ;; separate for readability
+            (if (or (eq handle-nil 'all) (member first handle-nil)) t
+              (message "`handle' ran `%s' unsuccessfully." first)
+              (handle--command-execute rest arg)))
         (error (message "`handle' failed to run `%s'." first)
                (handle--command-execute rest arg))))))
 
