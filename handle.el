@@ -49,20 +49,48 @@
 ;;; Code:
 (require 'parent-mode)
 
-(defvar handle-alist nil
+(defgroup handle nil
+  "A `handle' for major-mode generic functions."
+  :link '(url-link :tag "gitlab"
+          "https://gitlab.com/jjzmajic/handle")
+  :prefix "handle-"
+  :group 'tools)
+
+(defcustom handle-keywords
+  '(:evaluators :repls :docs :gotos
+    :formatters :compilers :errors)
+  "Package author's preffered `handle' keywords.
+Users are strongly encouraged to override this vairable to suit
+their needs, and to do so before the package is loaded."
+  :type '(repeat symbol)
+  :group 'handle)
+
+(defcustom handle-nice-functions nil
+  "List of commands that return t on success like good citizens.
+If t, treat all commands passed to `handle' this way.  If nil,
+treat none of them this way.  If a list, only treat listed
+functions this way.  If a list starting with `not' treat all
+commands except those listed this way."
+  :group 'handle
+  :type '(choice
+          (const :tag "none" nil)
+          (const :tag "all" t)
+          (set :menu-tag "command specific" :tag "commands"
+               :value (not)
+               (const :tag "except" not)
+               (repeat :inline t (symbol :tag "command")))))
+
+(defvar handle--alist nil
   "`handle' dispatch alist.
 Associates major modes with handlers.")
 
-(defvar handle-nil 'all
-  "List of commands that return nil on success.
-If `all', treat all commands passed to `handle' this way.")
-
-(defvar handle-keywords
-  '(:evaluators :repls :docs :gotos
-                :formatters :compilers :errors)
-  "Package author's preffered keywords.
-Users are strongly encouraged to override this vairable to suit
-their needs, and to do so /before/ the package is loaded.")
+(defun handle--nice-function-p (function)
+  "Check if FUNCTION returns t on success.
+Consult `handle-nice-functions'."
+  (and (pcase handle-nice-functions
+         ('t t)
+         (`(not . ,functions) (not (memq function functions)))
+         (functions (memq function functions)))))
 
 (defun handle--enlist (exp)
   "Return EXP wrapped in a list, or as-is if already a list."
@@ -82,7 +110,7 @@ their needs, and to do so /before/ the package is loaded.")
                    (handle--enlist arg)))))
       (dolist (mode modes)
         (push `(,mode . ,args)
-              handle-alist))))
+              handle--alist))))
   (format
    "Define handles for MODES through plist ARGS.
 You can use any keyword from `handle-keywords', as long as you
@@ -102,8 +130,7 @@ Try next command on `error', passing ARG as `prefix-arg'."
            ((let ((prefix-arg arg))
               (message "`handle' running `%s'." first)
               (command-execute first 'record)) t)
-           ((or (eq handle-nil 'all)
-                (member first handle-nil)) t)
+           ((not (handle--nice-function-p first)) t)
            (t (progn
                 (message "`handle' ran `%s' unsuccessfully." first)
                 (handle--command-execute rest arg))))
@@ -112,7 +139,7 @@ Try next command on `error', passing ARG as `prefix-arg'."
 
 (defun handle--get (mode keyword)
   "Return handlers for KEYWORD in MODE."
-  (plist-get (alist-get mode handle-alist) keyword))
+  (plist-get (alist-get mode handle--alist) keyword))
 
 (defun handle--mode-execute (modes keyword keyword-name arg)
   "Handle KEYWORD for MODES, passing prefix ARG."
