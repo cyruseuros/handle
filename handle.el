@@ -100,7 +100,7 @@ Try next command on `error', passing ARG as `prefix-arg'."
       (condition-case nil
           (cond
            ((let ((prefix-arg arg))
-              (message "`handle' running `%s'..." first)
+              (message "`handle' running `%s'." first)
               (command-execute first 'record)) t)
            ((or (eq handle-nil 'all)
                 (member first handle-nil)) t)
@@ -119,9 +119,9 @@ Try next command on `error', passing ARG as `prefix-arg'."
   (let ((first (car modes))
         (rest (cdr modes)))
     (when modes
-      (message "`handle' handling `%s' %s..." first keyword-name)
+      (message "`handle' handling `%s' %s." first keyword-name)
       (unless (handle--command-execute (handle--get first keyword) arg)
-        (message "Couldn't `handle' `%s' %s." first keyword-name)
+        (message "`handle' couldn't handle `%s' %s." first keyword-name)
         (handle--mode-execute rest keyword keyword-name arg)))))
 
 (dolist (keyword handle-keywords)
@@ -132,7 +132,7 @@ Try next command on `error', passing ARG as `prefix-arg'."
         (handle--mode-execute
          (reverse (parent-mode-list major-mode))
          keyword keyword-name arg))
-      (format "`handle' for %s." keyword-name))))
+      (format "`handle' %s." keyword-name))))
 
 (provide 'handle)
 ;;; handle.el ends here
