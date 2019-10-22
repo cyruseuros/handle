@@ -39,9 +39,15 @@ So by running this:
 
 And then calling =handle-docs= in python mode, =handle= will run each
 of the functions specified under =:docs= in order untill one
-succeeds. If a function errors out or returns =nil= it will calmly
-proceed to the next one. The same function will behave differently in
-other modes.
+succeeds. If a function errors out (or returns =nil=, see
+=handle-nice-functions=) it will calmly proceed to the next one. The
+same function will behave differently in other modes.
+
+=handle= is also aware of the Emacs mode hierarchy. If it cannot
+handle the task you gave it in a specific mode, it will attempt to do
+so with the instructions you gave for the parent mode. This also means
+that you can set default/global handlers by targeting modes like
+=prog-mode= and =text-mode=.
 
 * Note
 This package is designed to be as unopinionated as possible. I
