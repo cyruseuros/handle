@@ -52,13 +52,13 @@
 (defgroup handle nil
   "A `handle' for major-mode generic functions."
   :link '(url-link :tag "gitlab"
-          "https://gitlab.com/jjzmajic/handle")
+		   "https://gitlab.com/jjzmajic/handle")
   :prefix "handle-"
   :group 'tools)
 
 (defcustom handle-keywords
   '(:evaluators :repls :docs :gotos
-    :formatters :compilers :errors)
+		:formatters :compilers :errors)
   "Package author's preffered `handle' keywords.
 Users are strongly encouraged to override this vairable to suit
 their needs, and to do so before the package is loaded."
@@ -109,8 +109,12 @@ Consult `handle-nice-functions'."
                  (if (keywordp arg) arg
                    (handle--enlist arg)))))
       (dolist (mode modes)
-        (push `(,mode . ,args)
-              handle--alist))))
+	(let ((old-args (alist-get mode handle--alist)))
+	  (if old-args
+	      (progn
+		(cl-delete mode handle--alist :key #'car :test #'equal)
+		(push `(,mode . ,(append args old-args)) handle--alist))
+	    (push `(,mode . ,args) handle--alist))))))
   (format
    "Define handles for MODES through plist ARGS.
 You can use any keyword from `handle-keywords', as long as you
